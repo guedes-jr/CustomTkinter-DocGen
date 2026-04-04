@@ -94,5 +94,3 @@ pip install -r requirements.txt
 
 ## 🛡️ Licença
 Este software é de uso interno para automação de documentos. Todos os direitos reservados.
-
-*Desenvolvido com ❤️ por DocGen Team.*

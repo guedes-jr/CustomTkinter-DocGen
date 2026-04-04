@@ -1,5 +1,10 @@
 # 📄 DocGen Pro v1.0 - Automação Profissional de Documentos
 
+<div align="center">
+  <img src="assets/screenshots/login.png" width="45%" />
+  <img src="assets/screenshots/dashboard.png" width="45%" />
+</div>
+
 O **DocGen Pro** é um software desktop de alta performance desenvolvido em Python para automação completa de documentos Word (`.docx`) e PDF. Ideal para departamentos jurídicos, administrativos e comerciais que lidam com fluxos repetitivos de contratos, declarações e relatórios.
 
 ![DocGen Pro Banner](https://img.shields.io/badge/Status-Vers%C3%A3o%201.0-blue?style=for-the-badge)

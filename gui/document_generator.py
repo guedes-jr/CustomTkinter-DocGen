@@ -9,6 +9,74 @@ import database
 from utils import docx_parser
 from tkcalendar import DateEntry
 import shutil
+import traceback
+import uuid
+
+try:
+    import pyperclip
+    HAS_PYPERCLIP = True
+except:
+    HAS_PYPERCLIP = False
+
+def copy_to_clipboard(text):
+    if HAS_PYPERCLIP:
+        try:
+            pyperclip.copy(text)
+            return True
+        except:
+            pass
+    return False
+
+def show_error_dialog(title, message, details=None):
+    dialog = ctk.CTkToplevel()
+    dialog.title(title)
+    dialog.geometry("500x250")
+    dialog.resizable(False, False)
+    
+    dialog.grid_rowconfigure(2, weight=1)
+    dialog.grid_columnconfigure(0, weight=1)
+    
+    ctk.CTkLabel(dialog, text="⚠️ " + message, font=ctk.CTkFont(size=14), wraplength=450).grid(row=0, column=0, padx=20, pady=20, sticky="w")
+    
+    show_details_btn = ctk.CTkButton(dialog, text="Ver Detalhes", command=lambda: toggle_details(True), width=150)
+    show_details_btn.grid(row=1, column=0, padx=20, pady=(0, 10))
+    
+    details_frame = ctk.CTkFrame(dialog)
+    details_frame.grid(row=2, column=0, sticky="nsew", padx=20, pady=(0, 20))
+    details_frame.grid_remove()
+    details_frame.grid_rowconfigure(0, weight=1)
+    details_frame.grid_columnconfigure(0, weight=1)
+    
+    textbox = ctk.CTkTextbox(details_frame, wrap="word")
+    textbox.grid(row=0, column=0, sticky="nsew")
+    textbox.insert("1.0", details if details else "Sem detalhes disponíveis.")
+    textbox.configure(state="disabled")
+    
+    btn_frame = ctk.CTkFrame(dialog, fg_color="transparent")
+    btn_frame.grid(row=3, column=0, padx=20, pady=(0, 20))
+    
+    def do_copy():
+        if details:
+            dialog.clipboard_clear()
+            dialog.clipboard_append(details)
+            messagebox.showinfo("Copiado", "Erro copiado!")
+    
+    copy_btn = ctk.CTkButton(btn_frame, text="[Copiar]", width=90, height=32, command=do_copy)
+    
+    close_btn = ctk.CTkButton(btn_frame, text="Fechar", command=dialog.destroy, width=100, height=32)
+    close_btn.pack(side="right")
+    copy_btn.pack(side="right", padx=(0, 10))
+    copy_btn.pack_forget()
+    
+    def toggle_details(show):
+        if show:
+            details_frame.grid()
+            show_details_btn.grid_remove()
+            dialog.geometry("500x450")
+            dialog.resizable(True, True)
+            copy_btn.pack(side="right", padx=(0, 10))
+    
+    dialog.focus()
 
 class VariableInputRow(ctk.CTkFrame):
     def __init__(self, master, var_name, preload_data=None):
@@ -293,9 +361,6 @@ class DocumentGeneratorFrame(ctk.CTkFrame):
                                        fg_color="#28a745", hover_color="#218838", height=38, corner_radius=0)
         self.bulk_btn.grid(row=0, column=2, padx=10, pady=15)
         
-        self.backup_btn = ctk.CTkButton(self.top_box, text="🛡️ Backup", command=self.do_backup, width=100, height=38, corner_radius=0)
-        self.backup_btn.grid(row=0, column=3, padx=10, pady=15)
-        
         # Progress Bar Area
         self.progress_frame = ctk.CTkFrame(self, fg_color="transparent", height=40)
         self.progress_frame.grid(row=2, column=0, sticky="ew", padx=20)
@@ -398,29 +463,84 @@ class DocumentGeneratorFrame(ctk.CTkFrame):
         for var, row in self.variable_rows.items():
             data[var] = row.get_value()
             cache_state[var] = row.get_ui_state()
-            
-        save_path = filedialog.asksaveasfilename(defaultextension=".docx", filetypes=[("Word", "*.docx")])
+        
+        if self.variables:
+            vars_for_filename = [v for v in self.variables if v in self.variable_rows and self.variable_rows[v].get_value().get('type') != 'imagem']
+            result = self.show_filename_config_dialog(vars_for_filename if vars_for_filename else self.variables)
+            if not result:
+                return
+            filename_vars, filename_pattern = result
+        else:
+            filename_vars = []
+            filename_pattern = ""
+        
+        default_name = "documento"
+        if filename_vars:
+            safe_name = filename_pattern
+            for fv in filename_vars:
+                val = data.get(fv, {}).get('value', '')
+                val = str(val).strip()
+                val = "".join(c for c in val if c.isalnum() or c in " -_").strip()
+                val = val.replace(" ", "_")
+                if not val:
+                    val = f"valor_{fv}"
+                safe_name = safe_name.replace(f"{{{fv}}}", val)
+            default_name = safe_name if safe_name else "documento"
+        
+        save_path = filedialog.asksaveasfilename(
+            defaultextension=".docx", 
+            filetypes=[("Word", "*.docx")],
+            initialfile=f"{default_name}.docx"
+        )
         if save_path:
             try:
+                counter = 1
+                base_path = save_path
+                while os.path.exists(save_path):
+                    name_without_ext = os.path.splitext(base_path)[0]
+                    ext = os.path.splitext(base_path)[1]
+                    save_path = f"{name_without_ext}_{counter}{ext}"
+                    counter += 1
+                
                 database.save_template_cache(self.selected_template_id, cache_state)
                 docx_parser.generate_document(self.selected_template_path, save_path, data, convert_to_pdf=self.pdf_var.get())
-                messagebox.showinfo("Sucesso", "Concluído!")
+                messagebox.showinfo("Sucesso", f"Documento salvo em:\n{save_path}")
             except Exception as e:
                 messagebox.showerror("Erro", f"Erro: {e}")
 
     def bulk_generation_ui(self):
         if not self.selected_template_path:
-            messagebox.showwarning("Aviso", "Selecione um modelo primeiro.")
+            messagebox.showwarning("Aviso", "Selecione um modelo primeiro na aba 'Gerar Documento'.")
+            return
+        
+        if not self.variables:
+            messagebox.showwarning("Aviso", "Carregue as variáveis do modelo primeiro.")
             return
             
         file_path = filedialog.askopenfilename(filetypes=[("Excel/CSV", "*.xlsx *.xls *.csv")])
         if not file_path: return
         
         try:
-            if file_path.endswith('.csv'): df = pd.read_csv(file_path)
-            else: df = pd.read_excel(file_path)
+            df = None
+            if file_path.endswith('.csv'):
+                df = pd.read_csv(file_path)
+            elif file_path.endswith(('.xlsx', '.xls')):
+                try:
+                    df = pd.read_excel(file_path, engine='openpyxl')
+                except Exception as e1:
+                    if file_path.endswith('.xls'):
+                        try:
+                            df = pd.read_excel(file_path, engine='xlrd')
+                        except:
+                            show_error_dialog("Erro", "Arquivo .xls corrompido ou formato inválido.\nSalve como .xlsx e tente novamente.", str(e1))
+                            return
+                    else:
+                        show_error_dialog("Erro", "Arquivo Excel inválido ou corrompido.\nO arquivo pode estar danificado. Tente criar uma nova planilha.", str(e1))
+                        return
             
-            # Simple column mapping logic (must match {var_name})
+            if df is None:
+                return
+            
             cols = df.columns.tolist()
             missing = [v for v in self.variables if v not in cols]
             
@@ -428,10 +548,15 @@ class DocumentGeneratorFrame(ctk.CTkFrame):
                 if not messagebox.askyesno("Mapeamento", f"As variáveis {missing} não foram encontradas nas colunas do Excel. Deseja ignorar e gerar com campos vazios?"):
                     return
             
+            result = self.show_filename_config_dialog(cols)
+            if not result:
+                return
+            
+            filename_vars, filename_pattern = result
+            
             dest_dir = filedialog.askdirectory(title="Onde salvar os documentos?")
             if not dest_dir: return
             
-            # Start process
             self.gen_box.grid_remove()
             self.progress_frame.grid()
             total = len(df)
@@ -441,20 +566,130 @@ class DocumentGeneratorFrame(ctk.CTkFrame):
                 self.progress_bar.set((index+1)/total)
                 self.update()
                 
-                # Build data dict for docx_parser
                 row_data = {}
                 for var in self.variables:
                     val = row.get(var, "")
                     row_data[var] = {"type": "texto", "value": str(val)}
                 
-                filename = f"Doc_{index+1}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.docx"
+                if filename_vars:
+                    safe_name = filename_pattern
+                    for fv in filename_vars:
+                        val = str(row.get(fv, "")).strip()
+                        val = "".join(c for c in val if c.isalnum() or c in " -_").strip()
+                        val = val.replace(" ", "_")
+                        if not val:
+                            val = f"valor_{fv}"
+                        safe_name = safe_name.replace(f"{{{fv}}}", val)
+                    
+                    base_name = f"{index+1:03d}_{safe_name}" if safe_name else f"documento_{index+1:03d}"
+                else:
+                    base_name = f"Doc_{index+1:03d}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+                
+                filename = f"{base_name}.docx"
                 out_path = os.path.join(dest_dir, filename)
+                
+                counter = 1
+                while os.path.exists(out_path):
+                    name_without_ext = os.path.splitext(filename)[0]
+                    filename = f"{name_without_ext}_{counter}.docx"
+                    out_path = os.path.join(dest_dir, filename)
+                    counter += 1
+                
                 docx_parser.generate_document(self.selected_template_path, out_path, row_data, convert_to_pdf=self.pdf_var.get())
             
             messagebox.showinfo("Sucesso", f"{total} documentos gerados com sucesso!")
             
         except Exception as e:
-            messagebox.showerror("Erro no Lote", f"Falha: {e}")
+            tb_str = traceback.format_exc()
+            show_error_dialog("Erro na Geração em Lote", f"Falha ao processar: {str(e)}\n\nVerifique se o arquivo Excel está correto.", tb_str)
         finally:
             self.progress_frame.grid_remove()
             self.gen_box.grid()
+
+    def show_filename_config_dialog(self, excel_columns):
+        dialog = ctk.CTkToplevel()
+        dialog.title("Configurar Nome dos Arquivos")
+        dialog.geometry("550x500")
+        dialog.resizable(False, False)
+        
+        dialog.grid_rowconfigure(2, weight=1)
+        dialog.grid_columnconfigure(0, weight=1)
+        
+        ctk.CTkLabel(dialog, text="Selecione as colunas para nomear os arquivos:", font=ctk.CTkFont(size=14, weight="bold")).grid(row=0, column=0, padx=20, pady=(20, 10), sticky="w")
+        
+        options_frame = ctk.CTkScrollableFrame(dialog, fg_color=("gray95", "gray17"), height=150)
+        options_frame.grid(row=1, column=0, padx=20, sticky="ew")
+        options_frame.grid_columnconfigure(0, weight=1)
+        
+        selected_vars = []
+        checkboxes = []
+        
+        for i, col in enumerate(excel_columns):
+            var = ctk.StringVar(value="")
+            cb = ctk.CTkCheckBox(options_frame, text=col, variable=var, onvalue=col, offvalue="",
+                                  command=lambda c=col, v=var: on_var_changed(c, v))
+            cb.grid(row=i, column=0, sticky="w", pady=2)
+            checkboxes.append((cb, var))
+        
+        pattern_frame = ctk.CTkFrame(dialog, fg_color="transparent")
+        pattern_frame.grid(row=2, column=0, padx=20, sticky="nsew", pady=(10, 20))
+        
+        ctk.CTkLabel(pattern_frame, text="Padrão do nome dos arquivos:", font=ctk.CTkFont(size=12, weight="bold")).grid(row=0, column=0, sticky="w", pady=(0, 5))
+        
+        pattern_entry = ctk.CTkEntry(pattern_frame, width=500)
+        pattern_entry.insert(0, "documento")
+        pattern_entry.grid(row=1, column=0, sticky="ew", pady=(0, 10))
+        
+        ctk.CTkLabel(pattern_frame, text="As variáveis selecionadas serão adicionadas automaticamente ao padrão.", text_color="gray60", font=ctk.CTkFont(size=11)).grid(row=2, column=0, sticky="w")
+        
+        ctk.CTkLabel(pattern_frame, text="Exemplo: documento_{nome} → João.docx", text_color="gray60", font=ctk.CTkFont(size=11)).grid(row=3, column=0, sticky="w", pady=(5, 0))
+        
+        result = {"vars": [], "pattern": ""}
+        result_ready = {"ready": False}
+        
+        def on_var_changed(col, var):
+            current_pattern = pattern_entry.get().strip()
+            if var.get():
+                if "{" + col + "}" not in current_pattern:
+                    if current_pattern and not current_pattern.endswith("_") and not current_pattern.endswith("{"):
+                        new_pattern = current_pattern + "_{" + col + "}"
+                    else:
+                        new_pattern = current_pattern + "{" + col + "}"
+                    pattern_entry.delete(0, "end")
+                    pattern_entry.insert(0, new_pattern)
+            else:
+                pattern_entry.delete(0, "end")
+                pattern_entry.insert(0, current_pattern.replace("{" + col + "}", "").replace("__", "_").rstrip("_"))
+        
+        def on_confirm():
+            selected = []
+            for cb, var in checkboxes:
+                if var.get():
+                    selected.append(var.get())
+            
+            pattern = pattern_entry.get().strip()
+            if not pattern:
+                pattern = "documento"
+            
+            result["vars"] = selected
+            result["pattern"] = pattern
+            result_ready["ready"] = True
+            dialog.destroy()
+        
+        def on_cancel():
+            dialog.destroy()
+        
+        btn_frame = ctk.CTkFrame(dialog, fg_color="transparent")
+        btn_frame.grid(row=3, column=0, padx=20, pady=(0, 20))
+        
+        ctk.CTkButton(btn_frame, text="Continuar", command=on_confirm, width=120, fg_color="#2fa64b").pack(side="right")
+        ctk.CTkButton(btn_frame, text="Cancelar", command=on_cancel, width=120).pack(side="right", padx=(0, 10))
+        
+        dialog.bind("<Return>", lambda e: on_confirm())
+        dialog.bind("<Escape>", lambda e: on_cancel())
+        
+        dialog.wait_window()
+        
+        if result_ready["ready"]:
+            return result["vars"], result["pattern"]
+        return None

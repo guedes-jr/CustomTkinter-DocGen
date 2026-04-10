@@ -19,49 +19,63 @@ class LoginFrame(ctk.CTkFrame):
         bg_path = os.path.join(os.path.dirname(__file__), '..', 'assets', 'login_bg.png')
         if os.path.exists(bg_path):
             self.bg_img_raw = Image.open(bg_path)
-            self.bg_img = ctk.CTkImage(light_image=self.bg_img_raw, dark_image=self.bg_img_raw, size=(1280, 720))
-            self.bg_label = ctk.CTkLabel(self, image=self.bg_img, text="")
-            self.bg_label.grid(row=0, column=0, rowspan=10, sticky="nsew")
+            self.bg_img = ctk.CTkImage(light_image=self.bg_img_raw, dark_image=self.bg_img_raw, size=(1920, 1080))
+            self.bg_label = ctk.CTkLabel(self, image=self.bg_img, text="", bg_color="transparent")
+            self.bg_label.place(x=0, y=0, relwidth=1, relheight=1)
+            self.bg_raw = self.bg_img_raw
         
-        # 2. Main Login Elements (Directly in self for transparency)
-        # Logo
-        logo_path = os.path.join(os.path.dirname(__file__), '..', 'assets', 'logo.png')
-        if os.path.exists(logo_path):
-            img = ctk.CTkImage(light_image=Image.open(logo_path),
-                               dark_image=Image.open(logo_path),
-                               size=(140, 140))
-            self.logo_label = ctk.CTkLabel(self, text="", image=img)
-            self.logo_label.grid(row=1, column=0, pady=(0, 20))
-        else:
-            self.logo_label = ctk.CTkLabel(self, text="DocGen Pro", font=ctk.CTkFont(size=36, weight="bold"), text_color="white")
-            self.logo_label.grid(row=1, column=0, pady=(0, 20))
-            
-        self.title_lbl = ctk.CTkLabel(self, text="Portal do Gerador", font=ctk.CTkFont(size=30, weight="bold"), text_color="white")
-        self.title_lbl.grid(row=2, column=0, pady=(0, 10))
+        # 2. Login Elements - directly on background with styled form
+        # Create a styled frame without rounded corners to avoid corner artifacts
+        self.form_frame = ctk.CTkFrame(self, 
+                                        fg_color="#1c1c1c",
+                                        border_color="#4a4a4a",
+                                        border_width=2,
+                                        corner_radius=0)
         
-        # ERROR LABEL
-        self.error_label = ctk.CTkLabel(self, text="", text_color="#ef4444", font=ctk.CTkFont(size=14, weight="bold"))
-        self.error_label.grid(row=3, column=0, pady=(0, 15))
+        # Place at center
+        self.form_frame.place(relx=0.5, rely=0.5, anchor="center")
         
-        self.username_entry = ctk.CTkEntry(self, placeholder_text="Usuário", width=350, height=55, corner_radius=0, border_width=0, fg_color="#1a1a1a")
-        self.username_entry.grid(row=4, column=0, pady=12)
+        # Inner padding frame
+        inner_frame = ctk.CTkFrame(self.form_frame, fg_color="transparent")
+        inner_frame.pack(expand=True, fill="both", padx=45, pady=35)
         
-        self.password_entry = ctk.CTkEntry(self, placeholder_text="Senha", show="*", width=350, height=55, corner_radius=0, border_width=0, fg_color="#1a1a1a")
-        self.password_entry.grid(row=5, column=0, pady=12)
+        # Title inside form frame
+        self.title_lbl = ctk.CTkLabel(inner_frame, text="Portal do Gerador", font=ctk.CTkFont(size=26, weight="bold"), text_color="white")
+        self.title_lbl.pack(pady=(0, 20))
         
-        # Forgot Password
-        self.forgot_btn = ctk.CTkButton(self, text="Esqueci minha senha", command=self.forgot_password_event,
-                                        fg_color="transparent", hover_color=None, text_color="#AAAAAA", font=ctk.CTkFont(size=12, underline=True), width=100)
-        self.forgot_btn.grid(row=6, column=0, sticky="e", padx=(0, 370)) # Adjusted for centering relative to entries
+        # Error Label
+        self.error_label = ctk.CTkLabel(inner_frame, text="", text_color="#ef4444", font=ctk.CTkFont(size=14, weight="bold"))
+        self.error_label.pack(pady=(0, 15))
         
-        self.login_button = ctk.CTkButton(self, text="Acessar Sistema", command=self.login_event, width=350, height=55, corner_radius=0, font=ctk.CTkFont(size=18, weight="bold"))
-        self.login_button.grid(row=7, column=0, pady=(40, 0))
+        # Username
+        self.username_entry = ctk.CTkEntry(inner_frame, placeholder_text="Usuário", width=260, height=44, 
+                                            corner_radius=10, border_width=2, border_color="#555555",
+                                            fg_color="#2a2a2a", text_color="white", placeholder_text_color="#777777")
+        self.username_entry.pack(pady=8)
+        
+        # Password
+        self.password_entry = ctk.CTkEntry(inner_frame, placeholder_text="Senha", show="*", width=260, height=44, 
+                                           corner_radius=10, border_width=2, border_color="#555555",
+                                           fg_color="#2a2a2a", text_color="white", placeholder_text_color="#777777")
+        self.password_entry.pack(pady=8)
+        
+        # Login Button
+        self.login_button = ctk.CTkButton(inner_frame, text="Acessar Sistema", command=self.login_event, 
+                                          width=260, height=44, corner_radius=10,
+                                          font=ctk.CTkFont(size=16, weight="bold"), fg_color="#2563eb", hover_color="#1d4ed8")
+        self.login_button.pack(pady=(25, 10))
+        
+        # Forgot Password - below login button
+        self.forgot_btn = ctk.CTkButton(inner_frame, text="Esqueci minha senha", command=self.forgot_password_event,
+                                        fg_color="transparent", hover_color="#333333", text_color="#888888", font=ctk.CTkFont(size=12))
+        self.forgot_btn.pack(pady=(5, 10))
         
         self.bind("<Configure>", self.on_resize)
         
     def on_resize(self, event):
         if hasattr(self, 'bg_img'):
-            self.bg_img.configure(size=(event.width, event.height))
+            new_size = (event.width, event.height)
+            self.bg_img.configure(size=new_size)
         
     def login_event(self):
         user = self.username_entry.get()
@@ -69,7 +83,8 @@ class LoginFrame(ctk.CTkFrame):
         
         if database.check_login(user, pwd):
             self.error_label.configure(text="")
-            self.on_success()
+            user_group = database.get_user_group(user)
+            self.on_success(user, user_group)
         else:
             self.error_label.configure(text="❌ Usuário ou senha incorretos!")
             

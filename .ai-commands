@@ -1,0 +1,63 @@
+# AI Commands - Atalhos e Comandos do Projeto
+
+## Makefile - Comandos Disponíveis
+
+| Comando | Descrição | Uso |
+|---------|-----------|-----|
+| `make help` | Mostra todos os comandos disponíveis | `make help` |
+| `make install` | Cria ambiente virtual e instala dependências | `make install` |
+| `make run` | Executa o aplicativo | `make run` |
+| `make clean` | Remove cache Python e arquivos temporários | `make clean` |
+| `make backup` | Exibe dicas de backup | `make backup` |
+| `make requirements` | Atualiza requirements.txt | `make requirements` |
+
+---
+
+## Comandos Rápidos (Terminal)
+
+### Desenvolvimento
+```bash
+# Executar aplicativo
+python3 main.py
+python3 -m pip install -r requirements.txt
+
+# Verificar syntax
+python3 -m py_compile *.py
+python3 -m py_compile gui/*.py
+```
+
+### Banco de Dados
+```bash
+# Resetar banco (cuidado!)
+rm -f *.db
+python3 -c "import database; database.init_db()"
+```
+
+### Limpeza
+```bash
+# Limpar cache Python
+find . -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null
+find . -type f -name "*.pyc" -delete
+
+# Remover arquivos .db temporários
+find . -name "*.db" -not -name "database.db" -delete
+```
+
+---
+
+## Atalhos - Uso Frequente
+
+| Atalho | Descrição |
+|--------|------------|
+| `new-feature` | Criar nova feature |
+| `fix-bug` | Corrigir bug reportado |
+| `refactor` | Refatorar código especificado |
+| `explore` | Explorar código para entender |
+
+---
+
+## Notas
+
+- Use `python3` (não `python`) no terminal
+- Sempre ative o ambiente virtual antes: `source venv/bin/activate`
+- O banco padrão é `database.db` na raiz

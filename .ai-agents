@@ -1,0 +1,13 @@
+# Agentes - Configuração de agentes de IA
+
+[agents]
+default = "general"
+
+[agents.general]
+description = "Agente geral para desenvolvimento Python/GUI"
+language = "pt-BR"
+always_think_step_by_step = false
+
+[agents.explore]
+description = "Agente para exploração e busca de código"
+thoroughness = "medium"

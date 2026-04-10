@@ -1,0 +1,37 @@
+# Treesitter - Estrutura de parsing para navegação rápida
+
+# Definição de estruturas importantes do projeto
+# Ajuda a IA a entender o código mais rapidamente
+
+[structures]
+main_entry = "main.py:App"
+
+modules = [
+  "database.py",
+  "gui/dashboard.py", 
+  "gui/login.py",
+  "gui/settings.py",
+  "gui/template_manager.py",
+  "gui/document_generator.py",
+  "gui/image_library.py",
+  "gui/user_management.py"
+]
+
+[important_functions]
+database = [
+  "init_db",
+  "set_db_path",
+  "validate_write_operation",
+  "is_process_running"
+]
+
+gui = [
+  "DashboardFrame",
+  "SettingsFrame", 
+  "DocumentGeneratorFrame",
+  "TemplateManagerFrame"
+]
+
+[key_classes]
+database = "DB_PATH, LOCK_FILE, on_db_change_callback"
+gui = "ctk.CTkFrame subclasses"

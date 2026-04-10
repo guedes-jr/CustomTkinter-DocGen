@@ -1,0 +1,30 @@
+# Prompts de Uso - Templates de prompts otimizados
+
+[quick_actions]
+# Bug fix rápido
+bug_fix = "Corrigir bug: {descricao}. Erro: {erro}. Arquivo: {arquivo}"
+
+# Adicionar feature
+add_feature = "Adicionar {feature} em {arquivo}. Requisitos: {requisitos}"
+
+# Explorar código
+explore = "Explorar {arquivo} para encontrar {o_que_procurar}"
+
+# Refatorar
+refactor = "Refatorar {funcao} em {arquivo}. Objetivo: {objetivo}"
+
+[templates]
+code_review = """
+Revisar {arquivo}:
+- Bugs potenciais
+- Problemas de performance
+- Boas práticas
+- Sugestões de melhoria
+"""
+
+diff_review = """
+Analisar alterações:
+- alterations
+- Impacto em outras partes
+- Testes necessários
+"""

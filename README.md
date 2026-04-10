@@ -1,4 +1,4 @@
-# 📄 DocGen Pro v1.0 - Automação Profissional de Documentos
+# DocGen Pro v2.0 - Automação Profissional de Documentos
 
 <div align="center">
   <img src="assets/screenshots/login.png" width="45%" />
@@ -7,90 +7,129 @@
 
 O **DocGen Pro** é um software desktop de alta performance desenvolvido em Python para automação completa de documentos Word (`.docx`) e PDF. Ideal para departamentos jurídicos, administrativos e comerciais que lidam com fluxos repetitivos de contratos, declarações e relatórios.
 
-![DocGen Pro Banner](https://img.shields.io/badge/Status-Vers%C3%A3o%201.0-blue?style=for-the-badge)
+![Status](https://img.shields.io/badge/Status-v2.0-blue?style=for-the-badge)
 ![Python](https://img.shields.io/badge/Python-3.13-yellow?style=for-the-badge&logo=python)
 ![CustomTkinter](https://img.shields.io/badge/UI-CustomTkinter-blue?style=for-the-badge)
 
 ---
 
-## 🌟 Destaques e Funcionalidades
-O sistema oferece uma suíte completa de produtividade:
+## 🌟 Novidades v2.0
 
-- **⚡ Geração em Lote:** Importe planilhas **Excel ou CSV** e gere centenas de documentos personalizados de uma só vez (automação via Pandas).
-- **📄 Exportação PDF Integrada:** Conversão nativa e independente (sem necessidade de Word instalado no Mac) via Mammoth e xhtml2pdf.
-- **🖼️ Biblioteca de Ativos:** Gerencie uma galeria de **Assinaturas e Logotipos** para inserção rápida em qualquer campo de imagem.
-- **🛠️ Inteligência de Campos:**
-  - **Máscaras de Entrada:** Formatação automática para CPF, CNPJ e Datas.
-  - **Dicionário de Variáveis (Tooltips):** Guarde descrições e lembretes (❓) para cada variável do seu modelo.
-- **🌙 Experiência Personalizada:** Alternador de tema **Dark/Light** nativo com persistência de escolha.
-- **🛡️ Segurança de Dados:** Sistema de **Backup Local (ZIP)** do banco de dados e arquivos de imagem.
+###Banco de Dados Flexível
+- **Múltiplos Bancos**: Escolha qualquer arquivo `.db` ou `.sqlite` como banco de dados
+- **Rede Compartilhada**: Sistema de lock para múltiplos usuários em pasta compartilhada (Dropbox, OneDrive, Google Drive)
+- **Configuração via Interface**: Nouvelle tela de configurações para selecionar o arquivo
+
+###Sistema de Permissões
+- **3 Grupos de Usuários**:
+  - `admin` - Acesso completo
+  - `manager` - Gerencia usuários e configurações (não pode criar admin)
+  - `user` - Apenas geração de documentos
+
+###Melhorias na Geração
+- **Nome Personalizado**: Escolha variáveis do Excel/planilha para nomear os arquivos
+- **Planilha Modelo**: Baixe um modelo Excel com as variáveis do documento Word
+- **Anti-Colisão**: Números sequenciais e sufixos para evitar arquivos duplicados
+- **Configuração de Nome Individual**: Mesmo recurso para geração individual
+
+---
+
+## 🌟 Funcionalidades
+
+- **Geração em Lote**: Importe planilhas Excel/CSV e gere centenas de documentos
+- **Exportação PDF Integrada**: Conversão nativa via Mammoth + xhtml2pdf
+- **Biblioteca de Ativos**: Gerencie assinaturas e logotipos
+- **Máscaras de Entrada**: CPF, CNPJ, Datas, Moeda
+- **Dicionário de Variáveis**: Descrições/tooltips para cada campo
+- **Tema Dark/Light**: Persistência de preferência
+- **Tela Chegada**: Inicia maximizado
 
 ---
 
 ## 🛠 Tecnologias
-- **Linguagem:** Python 3.13
-- **Interface:** CustomTkinter (Design Moderno & Responsivo)
-- **Processamento de Texto:** `python-docx` + `mammoth`
-- **Geração de PDF:** `xhtml2pdf`
-- **Banco de Dados:** SQLite3 (Persistência de usuários, imagens e cache de formulários)
-- **Análise de Dados:** `pandas` (para processamento de planilhas em lote)
+
+- **Python 3.13** + **CustomTkinter**
+- **SQLite** (com lock para multi-acesso)
+- **pandas** (processamento Excel/CSV)
+- **python-docx** + **mammoth** + **xhtml2pdf**
 
 ---
 
-## 📥 Instalação e Setup
+## 📥 Instalação
 
-### 1. Pré-requisitos (macOS/Linux)
-Certifique-se de ter o Python 3 instalado. Recomendamos o uso de ambiente virtual (venv). Se estiver no macOS via Homebrew:
 ```bash
-brew install python-tk@3.13
-```
-
-### 2. Configuração do Ambiente
-```bash
-# Clone o projeto e entre na pasta
-# Crie e ative o ambiente virtual
+# Criar ambiente virtual
 python -m venv venv
 source venv/bin/activate
 
-# Instale as dependências
+# Instalar dependências
 pip install -r requirements.txt
+
+# Executar
+python main.py
 ```
 
----
-
-## 📂 Como Usar
-
-1. **Inicie o Sistema:** `python main.py`
-2. **Login Inicial:** Acesse com `admin` / `admin`.
-3. **Configure seus Modelos:**
-   - Adicione um arquivo `.docx` em **Gerenciar Modelos**. Use chaves como `{nome_cliente}` ou `{data}` no seu arquivo Word.
-4. **Alimente a Biblioteca:**
-   - Salve suas assinaturas oficiais na aba **Biblioteca de Imagens**.
-5. **Gere Documentos:**
-   - **Individual:** Escolha o modelo, preencha as variáveis (use as máscaras automáticas!) e clique em Gerar.
-   - **Em Lote:** Clique em "⚡ Geração em Lote" e selecione um Excel com colunas que tenham os mesmos nomes das suas variáveis no Word.
+**Login padrão**: `admin` / `admin`
 
 ---
 
-## 📁 Estrutura do Projeto
-```text
-/
-├── main.py                     # Inicializador do sistema
-├── database.py                 # Core de persistência e lógica de backup
-├── requirements.txt            # Dependências atualizadas v2.0
+## 📁 Estrutura
+
+```
+├── main.py                     # Entry point
+├── database.py                # SQLite + lock multi-usuário
+├── requirements.txt            # Dependências
 ├── gui/
-│   ├── login.py                # Tela de acesso (transparente/moderna)
-│   ├── dashboard.py            # Estrutura principal e sidebar
-│   ├── document_generator.py   # Motor de geração (Individual/Lote/PDF)
-│   ├── template_manager.py     # Gestão de arquivos .docx
-│   ├── user_management.py      # Gestão de operadores do sistema
-│   └── image_library.py        # Galeria de assinaturas e logotipos
+│   ├── login.py               # Tela de login
+│   ├── dashboard.py           # Menu principal
+│   ├── document_generator.py  # Geração individual/lote
+│   ├── template_manager.py   # Gerenciar modelos .docx
+│   ├── image_library.py       # Biblioteca de imagens
+│   ├── user_management.py     # Gestão de usuários
+│   └── settings.py            # Configurações do banco
 ├── utils/
-│   └── docx_parser.py          # Lógica de injeção no Word e conversão PDF
-└── assets/                     # Imagens de fundo e branding da aplicação
+│   └── docx_parser.py         # Injeção Word + PDF
+└── assets/                    # Imagens
 ```
+
+---
+
+## 📂 Uso
+
+### 1. Modelos Word
+Use variáveis no formato `{nome_variavel}` no seu documento:
+```
+Prezado {nome_cliente},
+Data: {data_vencimento}
+```
+
+### 2. Gerar Documento
+- **Individual**: Preencha os campos e gere
+- **Lote**: Use Excel com colunas matching as variáveis
+- **Nome do Arquivo**: Escolha variáveis para compor o nome
+
+### 3. Planilha Modelo
+Em "Gerenciar Modelos", clique em "📥 Planilha" para baixar modelo Excel com as variáveis do documento.
+
+---
+
+## 🔒 Sistema de Lock
+
+O sistema usa arquivo `database.lock` para evitar conflitos em uso simultâneo:
+- Timeout de 5 minutos para locks órfãos
+- Validação automática antes de operações de escrita
+- Mensagem clara se banco estiver em uso
+
+---
+
+## 🤖 Configuração de IA
+
+Arquivos `.ai-*` na raiz otimizam desenvolvimento com IA:
+- `.ai-ignore` - Ignora arquivos irrelevantes
+- `.ai-context` - Contexto do projeto
+- `.ai-system` - Regras de comportamento
 
 ---
 
 ## 🛡️ Licença
-Este software é de uso interno para automação de documentos. Todos os direitos reservados.
+Uso interno. Todos os direitos reservados.

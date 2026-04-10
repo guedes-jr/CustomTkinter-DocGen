@@ -1,0 +1,32 @@
+# AI Ignore - Arquivos e pastas a ignorar em análises de IA
+
+## Padrões Ignorados
+
+| Categoria | Padrões | Motivo |
+|-----------|---------|--------|
+| **Python** | `__pycache__/`, `*.py[cod]`, `*.so`, `.venv/`, `venv/` | Cache e ambiente virtual |
+| **IDE** | `.vscode/`, `.idea/`, `*.swp`, `*~` | Arquivos de editor |
+| **Git** | `.git/`, `.gitignore` | Controle de versão |
+| **SO** | `.DS_Store`, `Thumbs.db` | Arquivos do sistema |
+| **Banco** | `*.db`, `*.sqlite`, `*.lock` | Arquivos de dados |
+| **Build** | `build/`, `dist/`, `*.egg-info/` | Saída de compilação |
+| **Assets** | `assets/` (imagens) | Recursos pesados |
+
+---
+
+## Estrutura do Projeto (Referência Rápida)
+
+```
+├── main.py              # Entry point
+├── database.py         # SQLite + lock multi-usuário  
+├── gui/
+│   ├── login.py        # Tela de login
+│   ├── dashboard.py    # Menu principal
+│   ├── document_generator.py  # Gerador documentos
+│   ├── template_manager.py   # Modelos DOCX
+│   ├── user_management.py    # Usuários/permissões
+│   ├── settings.py     # Configurações banco
+│   └── image_library.py      # Imagens
+└── utils/
+    └── docx_parser.py # Word/PDF
+```

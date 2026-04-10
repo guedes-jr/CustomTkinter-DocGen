@@ -1,0 +1,118 @@
+# AI Context - Contexto do Projeto DocGen Pro
+
+## 📁 Estrutura do Projeto
+
+| Arquivo | Descrição |
+|---------|------------|
+| `main.py` | Entry point - inicia app, configura theme |
+| `database.py` | SQLite + sistema de lock para multi-acesso |
+| `requirements.txt` | Dependências Python |
+| `gui/login.py` | Tela de login com validação |
+| `gui/dashboard.py` | Menu principal + navegação |
+| `gui/document_generator.py` | Geração individual/lote + PDF |
+| `gui/template_manager.py` | CRUD modelos .docx + planilha modelo |
+| `gui/user_management.py` | Gestão usuários + grupos |
+| `gui/image_library.py` | Biblioteca assinaturas/logos |
+| `gui/settings.py` | Configurações caminho do banco |
+| `utils/docx_parser.py` | Injeção Word + conversão PDF |
+
+---
+
+## 🛠 Tecnologias
+
+| Tecnologia | Uso |
+|------------|-----|
+| Python 3.13 | Linguagem principal |
+| CustomTkinter | Interface gráfica |
+| SQLite | Banco de dados |
+| pandas | Processamento Excel/CSV |
+| python-docx | Manipulação Word |
+| mammoth | Word → HTML |
+| xhtml2pdf | HTML → PDF |
+
+---
+
+## 🌟 Funcionalidades v2.0
+
+| # | Funcionalidade | Descrição |
+|---|----------------|------------|
+| 1 | Login + Permissões | 3 grupos: admin, manager, user |
+| 2 | Geração Individual | Escolha variáveis para nome do arquivo |
+| 3 | Geração em Lote | Excel/CSV → múltiplos documentos |
+| 4 | Nome Personalizado | Variáveis do Excel no nome do arquivo |
+| 5 | Planilha Modelo | Baixa Excel com variáveis do DOCX |
+| 6 | Biblioteca Imagens | Assinaturas/logos para documentos |
+| 7 | Banco Flexível | Qualquer arquivo .db/.sqlite |
+| 8 | Lock Rede | Evita conflitos em pasta compartilhada |
+
+---
+
+## 🔐 Sistema de Permissões
+
+| Ação | admin | manager | user |
+|------|-------|---------|------|
+| Gerar documentos | ✅ | ✅ | ✅ |
+| Gerenciar modelos | ✅ | ✅ | ✅ |
+| Biblioteca imagens | ✅ | ✅ | ✅ |
+| Gerenciar usuários | ✅ | ✅ | ❌ |
+| Criar admin | ✅ | ❌ | ❌ |
+| Acessar configurações | ✅ | ✅ | ❌ |
+
+---
+
+## 📊 Variáveis para Nome de Arquivo
+
+| Contexto | Variáveis Disponíveis | Exemplo |
+|----------|----------------------|---------|
+| **Individual** | Texto (CPF, CNPJ, data, etc) | `{nome}_{cpf}.docx` |
+| **Lote** | Colunas do Excel | `{nome}_{data}.docx` |
+| **Excluídas** | Imagem (caminho/assinatura) | Ignoradas automaticamente |
+
+---
+
+## 🔒 Sistema de Lock
+
+| Aspecto | Detalhe |
+|---------|---------|
+| Arquivo | `database.lock` |
+| Timeout | 5 minutos |
+| Localização | Mesmo diretório do banco |
+| Validação | Antes de toda escrita |
+
+---
+
+## 🚀 Como Executar
+
+```bash
+# Ativar ambiente
+source venv/bin/activate
+
+# Executar
+python3 main.py
+
+# Ou usar make
+make install  # Primeira vez
+make run      # Executar
+make clean    # Limpar cache
+
+# Login padrão
+admin / admin
+```
+
+### Makefile
+
+| Comando | Descrição |
+|---------|-----------|
+| `make install` | Criar venv + instalar dependências |
+| `make run` | Executar o aplicativo |
+| `make clean` | Limpar cache Python |
+| `make requirements` | Atualizar requirements.txt |
+
+---
+
+## 📋 Notas para IA
+
+- Usar `python3` (não `python`)
+- Todas operações de escrita passam por `validate_write_operation()`
+- Variáveis de imagem devem ser ignoradas no nome do arquivo
+- Banco pode ser arquivo remoto (Dropbox/OneDrive) com lock

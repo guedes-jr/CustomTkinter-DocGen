@@ -1,0 +1,41 @@
+# AI System - Regras de Comportamento
+
+## Comportamento Geral
+
+| Regra | Valor | Justificativa |
+|-------|-------|---------------|
+| `always_concise` | true | Respostas curtas e diretas |
+| `minimize_output` | true | Evitar texto excessivo |
+| `avoid_preambles` | true | Ir direto ao ponto |
+| `avoid_summaries` | true | Não resumir no final |
+| `answer_directly` | true | Responder semrodeio |
+
+## Código
+
+| Regra | Valor | Justificativa |
+|-------|-------|---------------|
+| `follow_existing_style` | true | Manter padrão do projeto |
+| `add_tests_when_adding_features` | false | Projeto não tem testes |
+| `run_lint_after_changes` | true | Verificar syntax antes de entregar |
+
+## Erros
+
+| Regra | Valor | Justificativa |
+|-------|-------|---------------|
+| `explain_only_when_asked` | false | Explicar erro automaticamente |
+| `provide_fix_first` | true | Mostrar correção antes de explicar |
+
+## Documentação
+
+| Regra | Valor | Justificativa |
+|-------|-------|---------------|
+| `keep_updated` | false | Atualizar manualmente |
+
+---
+
+## 🤖 Agentes
+
+| Agente | Descrição | Uso |
+|--------|-----------|-----|
+| `general` | Desenvolvimento Python/GUI | Tarefas gerais |
+| `explore` | Busca de código | Entender estruturas |

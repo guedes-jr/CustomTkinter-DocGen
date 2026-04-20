@@ -122,7 +122,7 @@ class TemplateManagerFrame(ctk.CTkFrame):
         filepath = filedialog.askopenfilename(filetypes=[("Word Documents", "*.docx")])
         if filepath:
             filename = os.path.basename(filepath)
-            dest_dir = "templates_dir"
+            dest_dir = os.path.join(database.get_appdata_dir(), "templates_dir")
             os.makedirs(dest_dir, exist_ok=True)
             dest_path = os.path.join(dest_dir, filename)
             

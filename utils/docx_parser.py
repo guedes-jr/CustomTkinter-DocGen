@@ -100,20 +100,75 @@ def generate_document(template_path, output_path, data, convert_to_pdf=False):
 
 def _replace_in_element(para, data):
     pattern = r'\{([a-zA-Z0-9_]+)\}'
-    total_text = para.text
-    matches = re.findall(pattern, total_text)
     
-    if not matches: return
-
-    for key in matches:
-        if key in data:
-            entry = data[key]
-            val = entry.get("value", "")
+    # Identifica todas as chaves presentes no parágrafo
+    matches = re.findall(pattern, para.text)
+    if not matches:
+        return
+        
+    for key in set(matches):
+        if key not in data:
+            continue
             
-            if entry.get("type") == "imagem":
-                if val and os.path.exists(val):
-                    para.text = para.text.replace(f"{{{key}}}", "")
-                    run = para.add_run()
-                    run.add_picture(val, width=Cm(5))
+        entry = data[key]
+        replacement = str(entry.get("value", ""))
+        is_image = (entry.get("type") == "imagem")
+        placeholder = f"{{{key}}}"
+        
+        # Enquanto existir o placeholder no texto do parágrafo
+        while placeholder in para.text:
+            # Mapeia cada caractere do parágrafo para o índice do seu Run
+            char_to_run = []
+            for run_idx, run in enumerate(para.runs):
+                for _ in range(len(run.text)):
+                    char_to_run.append(run_idx)
+            
+            # Encontra os índices de início e fim do placeholder no texto total
+            start_char_idx = para.text.find(placeholder)
+            end_char_idx = start_char_idx + len(placeholder) - 1
+            
+            # Descobre quais Runs compõem esse placeholder
+            start_run_idx = char_to_run[start_char_idx]
+            end_run_idx = char_to_run[end_char_idx]
+            
+            if is_image:
+                # Para imagens: limpa o texto do placeholder e insere no primeiro Run
+                _clear_text_range(para, start_char_idx, end_char_idx)
+                if replacement and os.path.exists(replacement):
+                    try:
+                        para.runs[start_run_idx].add_picture(replacement, width=Cm(5))
+                    except:
+                        pass
             else:
-                para.text = para.text.replace(f"{{{key}}}", str(val))
+                # Para texto: combina o texto dos Runs envolvidos, substitui e limpa os Runs subsequentes
+                combined_text = ""
+                for r_idx in range(start_run_idx, end_run_idx + 1):
+                    combined_text += para.runs[r_idx].text
+                
+                # Substitui apenas a primeira ocorrência encontrada nesse bloco combinado
+                new_combined_text = combined_text.replace(placeholder, replacement, 1)
+                
+                # Atualiza o primeiro Run com o texto novo
+                para.runs[start_run_idx].text = new_combined_text
+                
+                # Limpa o texto dos outros Runs que faziam parte do placeholder
+                for r_idx in range(start_run_idx + 1, end_run_idx + 1):
+                    para.runs[r_idx].text = ""
+
+def _clear_text_range(para, start, end):
+    """Remove um intervalo de caracteres [start, end] através de múltiplos Runs."""
+    current_idx = 0
+    for run in para.runs:
+        run_len = len(run.text)
+        run_end = current_idx + run_len
+        
+        # Se este Run sobrepõe o intervalo a ser limpo
+        if run_end > start and current_idx <= end:
+            overlap_start = max(0, start - current_idx)
+            overlap_end = min(run_len, end - current_idx + 1)
+            
+            text_list = list(run.text)
+            del text_list[overlap_start : overlap_end]
+            run.text = "".join(text_list)
+            
+        current_idx += run_len

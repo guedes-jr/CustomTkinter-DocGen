@@ -53,11 +53,14 @@ class LoginFrame(ctk.CTkFrame):
                                             fg_color="#2a2a2a", text_color="white", placeholder_text_color="#777777")
         self.username_entry.pack(pady=8)
         
-        # Password
         self.password_entry = ctk.CTkEntry(inner_frame, placeholder_text="Senha", show="*", width=260, height=44, 
                                            corner_radius=10, border_width=2, border_color="#555555",
                                            fg_color="#2a2a2a", text_color="white", placeholder_text_color="#777777")
         self.password_entry.pack(pady=8)
+        
+        # Binds para tecla Enter efetuar login
+        self.username_entry.bind("<Return>", lambda e: self.login_event())
+        self.password_entry.bind("<Return>", lambda e: self.login_event())
         
         # Login Button
         self.login_button = ctk.CTkButton(inner_frame, text="Acessar Sistema", command=self.login_event, 

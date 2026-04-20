@@ -2,6 +2,15 @@ import customtkinter as ctk
 from gui.login import LoginFrame
 from gui.dashboard import DashboardFrame
 import database
+import os
+import sys
+
+def resource_path(relative_path):
+    try:
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+    return os.path.join(base_path, relative_path)
 
 ctk.set_appearance_mode("Dark")
 ctk.set_default_color_theme("blue")
@@ -10,7 +19,13 @@ class App(ctk.CTk):
     def __init__(self):
         super().__init__()
         self.title("Gerador de Documentos")
-        self.state('zoomed')
+        try:
+            self.iconbitmap(resource_path("assets/icon.ico"))
+        except:
+            pass
+        
+        # Abrir maximizado de forma segura agendando a ação
+        self.after(0, lambda: self.state('zoomed'))
         
         database.init_db()
         database.set_on_db_change(self.on_db_changed)

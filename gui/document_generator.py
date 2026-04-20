@@ -541,6 +541,9 @@ class DocumentGeneratorFrame(ctk.CTkFrame):
             if df is None:
                 return
             
+            # Subsititui valores nulos (NaN) por string vazia para evitar o texto "nan" nos documentos
+            df = df.fillna("")
+            
             cols = df.columns.tolist()
             missing = [v for v in self.variables if v not in cols]
             
@@ -611,6 +614,13 @@ class DocumentGeneratorFrame(ctk.CTkFrame):
         dialog.title("Configurar Nome dos Arquivos")
         dialog.geometry("550x500")
         dialog.resizable(False, False)
+        
+        # Garante que a janela apareça na frente e ganhe foco
+        dialog.lift()
+        dialog.focus_force()
+        dialog.attributes("-topmost", True)
+        # Opcional: fazer a janela ser tratada como filha do CTk principal
+        # dialog.transient(self.master)
         
         dialog.grid_rowconfigure(2, weight=1)
         dialog.grid_columnconfigure(0, weight=1)

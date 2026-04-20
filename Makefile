@@ -3,7 +3,7 @@
 PYTHON = venv/bin/python
 PIP = venv/bin/pip
 
-.PHONY: help install run clean backup requirements
+.PHONY: help install run clean backup requirements build
 
 help:
 	@echo "Comandos disponíveis:"
@@ -12,6 +12,7 @@ help:
 	@echo "  make clean        - Remover arquivos temporários e caches"
 	@echo "  make backup       - (Simulado) Dica de backup"
 	@echo "  make requirements - Atualizar o arquivo requirements.txt"
+	@echo "  make build        - Gerar o executável (instalador) para Windows"
 
 install:
 	python3 -m venv venv
@@ -37,3 +38,9 @@ backup:
 requirements:
 	$(PIP) freeze > requirements.txt
 	@echo "requirements.txt atualizado."
+
+build:
+	rm -rf build/ dist/ "DocGen Pro.spec"
+	$(PIP) install pyinstaller
+	python -m PyInstaller --onefile --noconsole --icon "assets\icon.ico" --name "DocGen Pro" --add-data "assets;assets" --collect-all customtkinter --collect-all reportlab --collect-all xhtml2pdf main.py
+	@echo "Executável Windows gerado com sucesso na pasta 'dist/DocGen Pro.exe'"

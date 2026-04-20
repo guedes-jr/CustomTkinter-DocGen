@@ -3,13 +3,19 @@ import os
 import json
 import shutil
 import socket
-import fcntl
 import struct
 from datetime import datetime
 import hashlib
 import time
 
-LOCK_FILE = 'database.lock'
+def get_appdata_dir():
+    base = os.getenv('APPDATA', os.path.expanduser('~'))
+    app_dir = os.path.join(base, "DocGen Pro")
+    if not os.path.exists(app_dir):
+        os.makedirs(app_dir, exist_ok=True)
+    return app_dir
+
+LOCK_FILE = os.path.join(get_appdata_dir(), 'database.lock')
 
 def get_lock_name():
     hostname = socket.gethostname()
@@ -86,11 +92,12 @@ def set_db_path(db_file_path):
     DB_PATH = db_file_path
     LOCK_FILE = get_lock_file()
     
-    if not os.path.exists('database.db'):
-        conn = sqlite3.connect('database.db')
+    default_db = os.path.join(get_appdata_dir(), 'database.db')
+    if not os.path.exists(default_db):
+        conn = sqlite3.connect(default_db)
         conn.close()
     
-    temp_conn = sqlite3.connect('database.db')
+    temp_conn = sqlite3.connect(default_db)
     temp_cursor = temp_conn.cursor()
     temp_cursor.execute('INSERT OR REPLACE INTO app_settings (key, value) VALUES (?, ?)', ('db_path', db_file_path))
     temp_conn.commit()
@@ -105,13 +112,13 @@ def set_on_db_change(callback):
     global on_db_change_callback
     on_db_change_callback = callback
 
-DB_PATH = 'database.db'
-LOCK_FILE = 'database.lock'
+DB_PATH = os.path.join(get_appdata_dir(), 'database.db')
+LOCK_FILE = os.path.join(get_appdata_dir(), 'database.lock')
 
 def init_db():
     global DB_PATH, LOCK_FILE
     
-    default_db = 'database.db'
+    default_db = os.path.join(get_appdata_dir(), 'database.db')
     if not os.path.exists(default_db):
         conn = sqlite3.connect(default_db)
         conn.close()
@@ -189,7 +196,9 @@ def init_db():
     # Admin padrão
     cursor.execute('SELECT * FROM users WHERE username = ?', ('admin',))
     if not cursor.fetchone():
-        cursor.execute('INSERT INTO users (username, password) VALUES (?, ?)', ('admin', 'admin'))
+        cursor.execute('INSERT INTO users (username, password, group_name) VALUES (?, ?, ?)', ('admin', 'admin', 'admin'))
+    else:
+        cursor.execute("UPDATE users SET group_name = 'admin' WHERE username = 'admin'")
 
     # Tema padrão (Dark)
     cursor.execute('SELECT * FROM app_settings WHERE key = ?', ('theme',))
